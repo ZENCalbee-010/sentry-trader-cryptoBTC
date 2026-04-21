@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  sentry_trader:
+    build: .
+    container_name: sentry_trader_bot
+    restart: always  # Self-healing on crashes/reboots
+    environment:
+      - PYTHONUNBUFFERED=1
+    env_file:
+      - .env
+    volumes:
+      # Map Data out to Host (State Persistency)
+      - ./database:/app/database
+      # Map Model out to Host (Easy drag & drop updates without rebuilds)
+      - ./brain_center/models:/app/brain_center/models
+      # Map Logs out to Host 
+      - ./logs:/app/logs
+
+  dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile.dashboard
+    container_name: sentry_dashboard
+    restart: unless-stopped
+    ports:
+      - "8501:8501"
+    environment:
+      - DASHBOARD_PASS=ZENCalbee_35
+      - TZ=Asia/Bangkok
+    volumes:
+      # Map DB เพื่อให้ Dashboard เข้าถึงข้อมูลที่อัปเดตแบบ Realtime ได้
+      - ./database:/app/database
